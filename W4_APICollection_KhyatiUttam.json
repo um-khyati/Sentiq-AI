@@ -1,0 +1,369 @@
+{
+  "info": {
+    "_postman_id": "b6f1a9e2-4c3d-4a6a-9d2e-sentiqai-w4-0001",
+    "name": "SentiqAI API – Week 4",
+    "description": "REST API collection for the SentiqAI backend (Node.js + Express + MongoDB/Mongoose). Covers full CRUD for Reviews, the search and stats endpoints, and the Auth endpoints used by the Login/Signup pages.\n\nImport this collection into Postman, then set the `baseUrl` variable (defaults to http://localhost:5000/api) and run requests top to bottom. Create a review first so `reviewId` examples work, or set the `reviewId` collection variable to an existing review's _id.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5001/api", "type": "string" },
+    { "key": "reviewId", "value": "665f1c2e8b3a4d2f1c9e8b3a", "type": "string" },
+    { "key": "authToken", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Get All Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            },
+            "description": "Returns every review in the database, newest first. Supports optional `?sentiment=Positive|Negative|Neutral` and `?room=` query filters."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/reviews", "host": ["{{baseUrl}}"], "path": ["reviews"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"count\": 2,\n  \"data\": [\n    {\n      \"_id\": \"665f1c2e8b3a4d2f1c9e8b3a\",\n      \"guest\": \"Amara Okafor\",\n      \"room\": \"Deluxe King\",\n      \"sentiment\": \"Positive\",\n      \"score\": 92,\n      \"text\": \"Staff were incredibly attentive and the room was spotless.\",\n      \"date\": \"2026-06-18T00:00:00.000Z\",\n      \"createdAt\": \"2026-06-20T10:15:32.000Z\",\n      \"updatedAt\": \"2026-06-20T10:15:32.000Z\"\n    },\n    {\n      \"_id\": \"665f1c2e8b3a4d2f1c9e8b3b\",\n      \"guest\": \"Liam Chen\",\n      \"room\": \"Standard Twin\",\n      \"sentiment\": \"Negative\",\n      \"score\": 28,\n      \"text\": \"Air conditioning was broken for two nights.\",\n      \"date\": \"2026-06-17T00:00:00.000Z\",\n      \"createdAt\": \"2026-06-19T09:00:00.000Z\",\n      \"updatedAt\": \"2026-06-19T09:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Review By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", "{{reviewId}}"]
+            },
+            "description": "Returns a single review by its MongoDB _id."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/reviews/{{reviewId}}", "host": ["{{baseUrl}}"], "path": ["reviews", "{{reviewId}}"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"665f1c2e8b3a4d2f1c9e8b3a\",\n    \"guest\": \"Amara Okafor\",\n    \"room\": \"Deluxe King\",\n    \"sentiment\": \"Positive\",\n    \"score\": 92,\n    \"text\": \"Staff were incredibly attentive and the room was spotless.\",\n    \"date\": \"2026-06-18T00:00:00.000Z\",\n    \"createdAt\": \"2026-06-20T10:15:32.000Z\",\n    \"updatedAt\": \"2026-06-20T10:15:32.000Z\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/reviews/64f000000000000000000000", "host": ["{{baseUrl}}"], "path": ["reviews", "64f000000000000000000000"] }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Review not found with id 64f000000000000000000000\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest\": \"Hana Kobayashi\",\n  \"room\": \"Standard Twin\",\n  \"sentiment\": \"Positive\",\n  \"score\": 95,\n  \"text\": \"Best stay we've had this year. Housekeeping went above and beyond every single day.\",\n  \"date\": \"2026-06-14\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            },
+            "description": "Creates a new review. `guest`, `room`, `sentiment`, `score`, and `text` are required. `sentiment` must be Positive, Negative, or Neutral."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"guest\": \"Hana Kobayashi\",\n  \"room\": \"Standard Twin\",\n  \"sentiment\": \"Positive\",\n  \"score\": 95,\n  \"text\": \"Best stay we've had this year. Housekeeping went above and beyond every single day.\",\n  \"date\": \"2026-06-14\"\n}" },
+                "url": { "raw": "{{baseUrl}}/reviews", "host": ["{{baseUrl}}"], "path": ["reviews"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"665f1c2e8b3a4d2f1c9e8b3c\",\n    \"guest\": \"Hana Kobayashi\",\n    \"room\": \"Standard Twin\",\n    \"sentiment\": \"Positive\",\n    \"score\": 95,\n    \"text\": \"Best stay we've had this year. Housekeeping went above and beyond every single day.\",\n    \"date\": \"2026-06-14T00:00:00.000Z\",\n    \"createdAt\": \"2026-06-21T08:00:00.000Z\",\n    \"updatedAt\": \"2026-06-21T08:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"guest\": \"\",\n  \"room\": \"Standard Twin\",\n  \"sentiment\": \"Happy\",\n  \"score\": 150,\n  \"text\": \"\"\n}" },
+                "url": { "raw": "{{baseUrl}}/reviews", "host": ["{{baseUrl}}"], "path": ["reviews"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Guest name is required, Sentiment must be one of: Positive, Negative, Neutral, Score cannot be greater than 100, Review text is required\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 97,\n  \"text\": \"Updated: Best stay we've had this year, hands down.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", "{{reviewId}}"]
+            },
+            "description": "Updates one or more fields on an existing review. Only the fields provided in the body are changed."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"score\": 97,\n  \"text\": \"Updated: Best stay we've had this year, hands down.\"\n}" },
+                "url": { "raw": "{{baseUrl}}/reviews/{{reviewId}}", "host": ["{{baseUrl}}"], "path": ["reviews", "{{reviewId}}"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"665f1c2e8b3a4d2f1c9e8b3a\",\n    \"guest\": \"Amara Okafor\",\n    \"room\": \"Deluxe King\",\n    \"sentiment\": \"Positive\",\n    \"score\": 97,\n    \"text\": \"Updated: Best stay we've had this year, hands down.\",\n    \"date\": \"2026-06-18T00:00:00.000Z\",\n    \"createdAt\": \"2026-06-20T10:15:32.000Z\",\n    \"updatedAt\": \"2026-06-21T08:05:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"score\": 97\n}" },
+                "url": { "raw": "{{baseUrl}}/reviews/64f000000000000000000000", "host": ["{{baseUrl}}"], "path": ["reviews", "64f000000000000000000000"] }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Review not found with id 64f000000000000000000000\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", "{{reviewId}}"]
+            },
+            "description": "Permanently deletes a review by ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": { "raw": "{{baseUrl}}/reviews/{{reviewId}}", "host": ["{{baseUrl}}"], "path": ["reviews", "{{reviewId}}"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"665f1c2e8b3a4d2f1c9e8b3a\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": { "raw": "{{baseUrl}}/reviews/64f000000000000000000000", "host": ["{{baseUrl}}"], "path": ["reviews", "64f000000000000000000000"] }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Review not found with id 64f000000000000000000000\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/search?q=clean",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", "search"],
+              "query": [{ "key": "q", "value": "clean" }]
+            },
+            "description": "Additional endpoint (beyond standard CRUD): case-insensitive search across guest name, room, sentiment, and review text. Requires a non-empty `q` query parameter."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/reviews/search?q=clean", "host": ["{{baseUrl}}"], "path": ["reviews", "search"], "query": [{ "key": "q", "value": "clean" }] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"count\": 1,\n  \"query\": \"clean\",\n  \"data\": [\n    {\n      \"_id\": \"665f1c2e8b3a4d2f1c9e8b3a\",\n      \"guest\": \"Amara Okafor\",\n      \"room\": \"Deluxe King\",\n      \"sentiment\": \"Positive\",\n      \"score\": 92,\n      \"text\": \"Staff were incredibly attentive and the room was spotless.\",\n      \"date\": \"2026-06-18T00:00:00.000Z\",\n      \"createdAt\": \"2026-06-20T10:15:32.000Z\",\n      \"updatedAt\": \"2026-06-20T10:15:32.000Z\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "400 Bad Request — Missing query",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/reviews/search", "host": ["{{baseUrl}}"], "path": ["reviews", "search"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"A search query (?q=) is required\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Review Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", "stats"]
+            },
+            "description": "Bonus endpoint that powers the Dashboard page: returns aggregated counts of total/positive/negative/neutral reviews."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/reviews/stats", "host": ["{{baseUrl}}"], "path": ["reviews", "stats"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"total\": 6,\n    \"positive\": 3,\n    \"negative\": 2,\n    \"neutral\": 1\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"supersecret123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Creates a new user account (backs the Signup page). Returns a JWT on success."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"supersecret123\"\n}" },
+                "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"665f2a1e8b3a4d2f1c9e8b40\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane@example.com\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NWYyYTFlOGIzYTRkMmYxYzllOGI0MCJ9.SIGNATURE\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Duplicate Email",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"supersecret123\"\n}" },
+                "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"An account with that email already exists\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"supersecret123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticates a user (backs the Login page) and returns a JWT."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"supersecret123\"\n}" },
+                "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"665f2a1e8b3a4d2f1c9e8b40\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane@example.com\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NWYyYTFlOGIzYTRkMmYxYzllOGI0MCJ9.SIGNATURE\"\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized — Bad Credentials",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"wrongpassword\"\n}" },
+                "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

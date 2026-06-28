@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles for SentiqAI */
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-slate-900 dark:bg-surface-dark dark:text-slate-100;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+@layer utilities {
+  /* Gradient text used for headline highlights */
+  .text-gradient {
+    @apply bg-gradient-to-r from-indigo-600 via-primary-500 to-accent-500 bg-clip-text text-transparent dark:from-indigo-400 dark:via-primary-400 dark:to-accent-400;
+  }
+
+  /* Glassmorphism surface */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl dark:bg-white/5;
+  }
+
+  /* Animated gradient border wrapper (use with a solid-bg child) */
+  .gradient-border {
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.5),
+      rgba(59, 130, 246, 0.25),
+      rgba(99, 102, 241, 0.5)
+    );
+    background-size: 200% 200%;
+  }
+  .gradient-border:hover {
+    animation: gradientX 4s ease infinite;
+  }
+
+  /* Subtle dotted/grid backdrop for hero & sections */
+  .bg-grid {
+    background-image: linear-gradient(
+        to right,
+        rgba(99, 102, 241, 0.06) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+  .dark .bg-grid {
+    background-image: linear-gradient(
+        to right,
+        rgba(99, 102, 241, 0.1) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+  }
+
+  /* Custom scrollbar (subtle, premium feel) */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.35);
+    border-radius: 9999px;
+  }
+}
