@@ -70,4 +70,34 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { registerUser, loginUser };
+/**
+ * @desc    Google OAuth callback — passport has already verified the user
+ *          (see backend/config/passport.js) and attached it to req.user.
+ *          We issue our own JWT and hand the browser back to the
+ *          frontend, which picks the token up from the URL.
+ * @route   GET /api/auth/google/callback
+ * @access  Public (reached only after Google's consent screen)
+ */
+const googleCallback = asyncHandler(async (req, res) => {
+  const token = generateToken(req.user._id);
+  const frontendUrl = process.env.CLIENT_URL || "http://localhost:3000";
+  res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+});
+
+/**
+ * @desc    Return the currently authenticated user. Used by the frontend
+ *          route guard / OAuth callback page to confirm a token is valid
+ *          and fetch the profile it belongs to.
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
+const getMe = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      user: { id: req.user._id, name: req.user.name, email: req.user.email },
+    },
+  });
+});
+
+module.exports = { registerUser, loginUser, googleCallback, getMe };

@@ -10,6 +10,19 @@ import { useToast } from "@/components/ui";
 import { authApi, authStorage } from "@/lib/api";
 import { Mail, Lock, AlertCircle } from "lucide-react";
 
+// Simple multicolor "G" mark so the button reads as Google at a glance
+// without pulling in an extra icon library.
+function GoogleIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z" />
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.3l-6.3-5.3C29.3 35.1 26.8 36 24 36c-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.6 39.6 16.3 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.3 5.3C40.9 36.2 44 30.7 44 24c0-1.2-.1-2.4-.4-3.5z" />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -122,6 +135,25 @@ export default function LoginPage() {
                 {loading ? "Signing in…" : "Sign In"}
               </Button>
             </form>
+
+            {/* Divider */}
+            <div className="mt-6 flex items-center gap-3">
+              <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                or
+              </span>
+              <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+            </div>
+
+            {/* Google OAuth — full-page navigation to the backend, which
+                redirects to Google's consent screen and back to /auth/callback */}
+            <a
+              href={authApi.googleLoginUrl()}
+              className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </a>
 
             {/* Sign up prompt */}
             <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">

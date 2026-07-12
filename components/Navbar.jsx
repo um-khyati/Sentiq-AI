@@ -1,20 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, LogOut } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import Button from "@/components/Button";
+import { authStorage } from "@/lib/api";
 
-// Navigation links shared between desktop and mobile menus
-const navLinks = [
+// Base nav links always shown. "Login" is added/removed dynamically
+// depending on auth state (see below).
+const baseLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/reviews", label: "Reviews" },
   { href: "/ai-insights", label: "AI Insights" },
   { href: "/about", label: "About" },
-  { href: "/login", label: "Login" },
 ];
 
 // Stagger animation for the mobile menu items
@@ -33,7 +34,24 @@ const menuItem = {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Re-read auth state whenever the route changes (e.g. right after
+  // login/logout redirects), and on first mount.
+  useEffect(() => {
+    setUser(authStorage.getUser());
+  }, [pathname]);
+
+  const handleLogout = () => {
+    authStorage.clear();
+    setUser(null);
+    setIsOpen(false);
+    router.push("/");
+  };
+
+  const navLinks = user ? baseLinks : [...baseLinks, { href: "/login", label: "Login" }];
 
   return (
     <motion.header
@@ -82,9 +100,25 @@ export default function Navbar() {
 
           <ThemeToggle />
 
-          <Button href="/dashboard" className="!px-5 !py-2">
-            Get Started
-          </Button>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                {user.name?.split(" ")[0]}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Button href="/dashboard" className="!px-5 !py-2">
+              Get Started
+            </Button>
+          )}
         </div>
 
         {/* Mobile controls */}
@@ -159,13 +193,24 @@ export default function Navbar() {
                 );
               })}
               <motion.div variants={menuItem}>
-                <Button
-                  href="/dashboard"
-                  className="w-full"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Get Started
-                </Button>
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                ) : (
+                  <Button
+                    href="/dashboard"
+                    className="w-full"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Get Started
+                  </Button>
+                )}
               </motion.div>
             </motion.div>
           </motion.div>

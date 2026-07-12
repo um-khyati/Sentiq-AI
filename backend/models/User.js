@@ -29,6 +29,19 @@ const userSchema = new mongoose.Schema(
       minlength: [8, "Password must be at least 8 characters"],
       select: false, // never returned by default in queries
     },
+    // "local" = registered with email/password. "google" = created via
+    // Google OAuth sign-in (the password field still holds a random,
+    // never-shared hash so the schema requirement is satisfied, but the
+    // user can only actually log in through the Google flow).
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

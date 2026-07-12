@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import AnimatedSection from "@/components/AnimatedSection";
 import { Button, Input, Modal, Loader, useToast } from "@/components/ui";
 import { reviewsApi } from "@/lib/api";
+import RouteGuard from "@/components/RouteGuard";
 import { Search, Smile, Frown, Meh, Plus, Pencil, Trash2, AlertCircle } from "lucide-react";
 
 const sentimentMeta = {
@@ -48,7 +49,7 @@ function SentimentSelect({ value, onChange, id }) {
  * horizontal scrolling). Clicking a row/card opens the Modal with the
  * full review detail, where it can also be edited or deleted.
  */
-export default function ReviewsPage() {
+function ReviewsContent() {
   const { toast } = useToast();
 
   const [reviews, setReviews] = useState([]);
@@ -446,5 +447,14 @@ export default function ReviewsPage() {
 
       <Footer />
     </>
+  );
+}
+
+// Guarded — only logged-in users can view/manage reviews.
+export default function ReviewsPage() {
+  return (
+    <RouteGuard>
+      <ReviewsContent />
+    </RouteGuard>
   );
 }

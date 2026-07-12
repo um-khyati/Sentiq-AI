@@ -8,6 +8,7 @@ import AnimatedSection from "@/components/AnimatedSection";
 import StatCard from "@/components/StatCard";
 import { Button, Loader } from "@/components/ui";
 import { reviewsApi } from "@/lib/api";
+import RouteGuard from "@/components/RouteGuard";
 import {
   BarChart3,
   LayoutDashboard,
@@ -36,7 +37,7 @@ const sentimentMeta = {
   Neutral: { icon: Meh, classes: "text-amber-600 dark:text-amber-400" },
 };
 
-export default function DashboardPage() {
+function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [stats, setStats] = useState(null);
@@ -265,5 +266,15 @@ export default function DashboardPage() {
 
       <Footer />
     </>
+  );
+}
+
+// This page is only reachable when logged in — RouteGuard checks the
+// JWT (via GET /api/auth/me) and redirects to /login otherwise.
+export default function DashboardPage() {
+  return (
+    <RouteGuard>
+      <DashboardContent />
+    </RouteGuard>
   );
 }

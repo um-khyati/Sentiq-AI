@@ -153,9 +153,52 @@ HTTP status code (400, 401, 404, 500, etc.):
 ## Testing the API
 
 You can test endpoints with:
-- The Postman collection (`W4_APICollection_*.json`) — recommended.
+- The Postman collections (`W4_APICollection_*.json`, `W6_AuthAPICollection_*.json`) — recommended.
 - `curl`, e.g.:
   ```bash
   curl http://localhost:5000/api/reviews
   ```
 - The connected Next.js frontend (see the root `README.md`).
+
+## Week 6 — Authentication & Security
+
+Copy `.env.example` to `.env` and fill in the real values before running the
+server; the auth system won't start correctly without `JWT_SECRET`, and
+Google sign-in won't work without the `GOOGLE_*` variables.
+
+### Auth endpoints
+
+| Method | Route | Access | Notes |
+|---|---|---|---|
+| POST | `/api/auth/register` | Public | Rate-limited (5/15min), zod-validated |
+| POST | `/api/auth/login` | Public | Rate-limited (5/15min), zod-validated, returns JWT |
+| GET | `/api/auth/me` | **Protected** | Requires `Authorization: Bearer <token>` |
+| GET | `/api/auth/google` | Public | Starts the Google OAuth flow |
+| GET | `/api/auth/google/callback` | Public | Google redirects here; issues a JWT and redirects to `/auth/callback?token=...` on the frontend |
+
+`POST/PUT/DELETE /api/reviews...` also require a valid JWT (see
+`backend/routes/reviewRoutes.js`); `GET` requests stay public.
+
+### Setting up Google OAuth credentials
+
+1. Go to the [Google Cloud Console credentials page](https://console.cloud.google.com/apis/credentials).
+2. Create an **OAuth 2.0 Client ID** of type "Web application".
+3. Under **Authorized redirect URIs**, add exactly:
+   `http://localhost:5000/api/auth/google/callback`
+4. Copy the generated Client ID / Client Secret into `.env` as
+   `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+5. Restart the backend. Clicking "Continue with Google" on `/login` or
+   `/signup` will now go through the real consent screen.
+
+### Rate limiting
+
+`/api/auth/login` and `/api/auth/register` are capped at 5 requests per
+IP per 15-minute window (`backend/middleware/rateLimiter.js`). Exceeding
+it returns `429` with a JSON error body — this is what request #7 in the
+Week 6 Postman collection is for.
+
+### CORS
+
+`CLIENT_URL` in `.env` is the *only* origin allowed to call this API. Set
+it to your deployed frontend URL in production — the default fallback is
+`http://localhost:3000` for local development, not `*`.

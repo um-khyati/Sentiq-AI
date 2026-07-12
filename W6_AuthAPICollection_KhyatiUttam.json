@@ -1,0 +1,796 @@
+{
+  "info": {
+    "_postman_id": "c7a2f4e1-9b3d-4f6a-8e2f-sentiqai-w6-0001",
+    "name": "SentiqAI API \u2013 Week 6 (Auth)",
+    "description": "Auth-focused collection for the SentiqAI backend covering Week 6 deliverables: register, login (JWT auto-saved to the `authToken` collection variable), and protected endpoints called with that saved token.\n\nSetup:\n1. Import this collection into Postman.\n2. Set `baseUrl` (defaults to http://localhost:5000/api).\n3. Run \"Register User\" once, then \"Login User\" \u2014 its Tests script automatically saves the returned JWT into `authToken`.\n4. Run the protected requests below it; they send `Authorization: Bearer {{authToken}}` automatically.\n5. \"Access Protected Route (No Token)\" and \"Login \u2014 Trigger Rate Limit\" demonstrate the 401 and 429 failure cases required for the Week 6 screenshots.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reviewId",
+      "value": "665f1c2e8b3a4d2f1c9e8b3a",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "description": "Creates a new user account (backs the Signup page). Password is hashed with bcrypt server-side. Returns the created user + a signed JWT.\n\nExpected: 201 Created.\nRun once \u2014 a second run with the same email returns 400 (duplicate email).",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"supersecret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "201 Created",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates a new user account (backs the Signup page). Password is hashed with bcrypt server-side. Returns the created user + a signed JWT.\n\nExpected: 201 Created.\nRun once \u2014 a second run with the same email returns 400 (duplicate email).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"supersecret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"665f2a1e8b3a4d2f1c9e8b40\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane.w6@example.com\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NWYyYTFlOGIzYTRkMmYxYzllOGI0MCJ9.SIGNATURE\"\n  }\n}"
+        },
+        {
+          "name": "400 Bad Request \u2014 Duplicate Email",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates a new user account (backs the Signup page). Password is hashed with bcrypt server-side. Returns the created user + a signed JWT.\n\nExpected: 201 Created.\nRun once \u2014 a second run with the same email returns 400 (duplicate email).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"supersecret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"An account with that email already exists\"\n}"
+        },
+        {
+          "name": "400 Bad Request \u2014 Validation (zod)",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates a new user account (backs the Signup page). Password is hashed with bcrypt server-side. Returns the created user + a signed JWT.\n\nExpected: 201 Created.\nRun once \u2014 a second run with the same email returns 400 (duplicate email).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"supersecret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Bad Request",
+          "code": 400,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Password must be at least 8 characters\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "2. Login User (saves JWT)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "if (data && data.data && data.data.token) {",
+              "    pm.collectionVariables.set(\"authToken\", data.data.token);",
+              "    console.log(\"Saved JWT to {{authToken}}\");",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Authenticates the user created above (backs the Login page). On success, the Tests tab below automatically saves the returned JWT into the `authToken` collection variable so every request after this one can reuse it.\n\nExpected: 200 OK, `authToken` populated.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"supersecret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates the user created above (backs the Login page). On success, the Tests tab below automatically saves the returned JWT into the `authToken` collection variable so every request after this one can reuse it.\n\nExpected: 200 OK, `authToken` populated.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"supersecret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"665f2a1e8b3a4d2f1c9e8b40\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane.w6@example.com\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NWYyYTFlOGIzYTRkMmYxYzllOGI0MCJ9.SIGNATURE\"\n  }\n}"
+        },
+        {
+          "name": "401 Unauthorized \u2014 Bad Credentials",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticates the user created above (backs the Login page). On success, the Tests tab below automatically saves the returned JWT into the `authToken` collection variable so every request after this one can reuse it.\n\nExpected: 200 OK, `authToken` populated.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"supersecret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "3. Get Current User [Protected]",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        },
+        "description": "Protected route \u2014 requires `Authorization: Bearer <token>`. Uses the `authToken` saved by the Login request. Verifies the JWT server-side (backend/middleware/authMiddleware.js) and returns the logged-in user's profile.\n\nExpected: 200 OK with the user object."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Protected route \u2014 requires `Authorization: Bearer <token>`. Uses the `authToken` saved by the Login request. Verifies the JWT server-side (backend/middleware/authMiddleware.js) and returns the logged-in user's profile.\n\nExpected: 200 OK with the user object."
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"665f2a1e8b3a4d2f1c9e8b40\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane.w6@example.com\"\n    }\n  }\n}"
+        },
+        {
+          "name": "401 Unauthorized \u2014 No Token",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Protected route \u2014 requires `Authorization: Bearer <token>`. Uses the `authToken` saved by the Login request. Verifies the JWT server-side (backend/middleware/authMiddleware.js) and returns the logged-in user's profile.\n\nExpected: 200 OK with the user object."
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Not authorized \\u2014 no token provided\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "4. Create Review [Protected]",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "if (data && data.data && data.data._id) {",
+              "    pm.collectionVariables.set(\"reviewId\", data.data._id);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/reviews",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reviews"
+          ]
+        },
+        "description": "Protected route \u2014 creating a review requires a valid JWT (backend/routes/reviewRoutes.js applies requireAuth to POST). Uses `authToken` from the Login request.\n\nExpected: 201 Created.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"guest\": \"Amit Sharma\",\n  \"room\": \"Deluxe King\",\n  \"sentiment\": \"Positive\",\n  \"score\": 92,\n  \"date\": \"2026-07-10\",\n  \"text\": \"Great stay, the staff were extremely helpful.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "201 Created",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ]
+            },
+            "description": "Protected route \u2014 creating a review requires a valid JWT (backend/routes/reviewRoutes.js applies requireAuth to POST). Uses `authToken` from the Login request.\n\nExpected: 201 Created.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest\": \"Amit Sharma\",\n  \"room\": \"Deluxe King\",\n  \"sentiment\": \"Positive\",\n  \"score\": 92,\n  \"date\": \"2026-07-10\",\n  \"text\": \"Great stay, the staff were extremely helpful.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"_id\": \"665f1c2e8b3a4d2f1c9e8b3a\",\n    \"guest\": \"Amit Sharma\",\n    \"room\": \"Deluxe King\",\n    \"sentiment\": \"Positive\",\n    \"score\": 92\n  }\n}"
+        },
+        {
+          "name": "401 Unauthorized \u2014 No/Invalid Token",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews"
+              ]
+            },
+            "description": "Protected route \u2014 creating a review requires a valid JWT (backend/routes/reviewRoutes.js applies requireAuth to POST). Uses `authToken` from the Login request.\n\nExpected: 201 Created.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest\": \"Amit Sharma\",\n  \"room\": \"Deluxe King\",\n  \"sentiment\": \"Positive\",\n  \"score\": 92,\n  \"date\": \"2026-07-10\",\n  \"text\": \"Great stay, the staff were extremely helpful.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Not authorized \\u2014 no token provided\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "5. Delete Review [Protected]",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "reviews",
+            "{{reviewId}}"
+          ]
+        },
+        "description": "Protected route \u2014 deleting a review requires a valid JWT. Uses `reviewId` (auto-saved by the Create Review request above) and `authToken`.\n\nExpected: 200 OK."
+      },
+      "response": [
+        {
+          "name": "200 OK",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": "Protected route \u2014 deleting a review requires a valid JWT. Uses `reviewId` (auto-saved by the Create Review request above) and `authToken`.\n\nExpected: 200 OK."
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Review deleted\",\n  \"data\": {}\n}"
+        },
+        {
+          "name": "401 Unauthorized \u2014 No Token",
+          "originalRequest": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reviews",
+                "{{reviewId}}"
+              ]
+            },
+            "description": "Protected route \u2014 deleting a review requires a valid JWT. Uses `reviewId` (auto-saved by the Create Review request above) and `authToken`.\n\nExpected: 200 OK."
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Not authorized \\u2014 no token provided\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "6. Access Protected Route (No Token)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        },
+        "description": "Same protected endpoint as #3, but deliberately sent WITHOUT an Authorization header. This is the request to screenshot for the 'protected API without a token returns 401' deliverable.\n\nExpected: 401 Unauthorized."
+      },
+      "response": [
+        {
+          "name": "401 Unauthorized",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Same protected endpoint as #3, but deliberately sent WITHOUT an Authorization header. This is the request to screenshot for the 'protected API without a token returns 401' deliverable.\n\nExpected: 401 Unauthorized."
+          },
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Not authorized \\u2014 no token provided\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "7. Login \u2014 Trigger Rate Limit",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Click 'Send' 6 times in a row (or use the Postman Runner set to 6 iterations). The backend allows 5 auth attempts per 15 minutes per IP (backend/middleware/rateLimiter.js). The 6th request in the window should return 429 \u2014 screenshot that response for the Week 6 deliverable.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"wrongpassword\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [
+        {
+          "name": "429 Too Many Requests",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Click 'Send' 6 times in a row (or use the Postman Runner set to 6 iterations). The backend allows 5 auth attempts per 15 minutes per IP (backend/middleware/rateLimiter.js). The 6th request in the window should return 429 \u2014 screenshot that response for the Week 6 deliverable.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.w6@example.com\",\n  \"password\": \"wrongpassword\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "status": "Too Many Requests",
+          "code": 429,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Too many attempts from this IP. Please try again in 15 minutes.\"\n}"
+        }
+      ]
+    }
+  ]
+}

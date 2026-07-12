@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const passport = require("./config/passport");
 
 const connectDB = require("./config/db");
 const reviewRoutes = require("./routes/reviewRoutes");
@@ -15,9 +16,18 @@ connectDB();
 const app = express();
 
 // --- Global middleware ---
-app.use(cors({ origin: process.env.CLIENT_URL || "*" })); // allow the Next.js frontend to call this API
+// In production, only the configured CLIENT_URL may call this API. In
+// development we fall back to the default Next.js dev origin (rather
+// than "*") so a stray/misconfigured request doesn't silently succeed.
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json()); // parse JSON request bodies
 app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize()); // no session — auth state lives in the JWT, not the server
 
 // --- Health check / root route ---
 app.get("/", (req, res) => {
