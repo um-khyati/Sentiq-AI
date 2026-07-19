@@ -1,4 +1,5 @@
 const { z } = require("zod");
+const { validate } = require("../middleware/validate");
 
 /**
  * Schemas describing exactly what /register and /login accept.
@@ -29,26 +30,5 @@ const loginSchema = z.object({
     .email("Please provide a valid email address"),
   password: z.string({ required_error: "Password is required" }).min(1, "Password is required"),
 });
-
-/**
- * validate(schema)
- *
- * Generic middleware factory: parses req.body against the given zod
- * schema. On success, req.body is replaced with the parsed (and
- * trimmed/lower-cased where applicable) data. On failure, responds
- * 400 with a readable list of field errors — never reaches the
- * controller or the database.
- */
-const validate = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body);
-
-  if (!result.success) {
-    const message = result.error.errors.map((e) => e.message).join(", ");
-    return res.status(400).json({ success: false, message });
-  }
-
-  req.body = result.data;
-  next();
-};
 
 module.exports = { registerSchema, loginSchema, validate };

@@ -23,4 +23,27 @@ const authLimiter = rateLimit({
   },
 });
 
-module.exports = { authLimiter };
+/**
+ * aiLimiter
+ *
+ * Caps calls into /api/ai/* endpoints per IP. These proxy to a metered,
+ * free-tier third-party API (Gemini), so — unlike a normal DB-backed
+ * route — every unnecessary request has a real quota/cost impact. Higher
+ * ceiling than authLimiter since a legitimate user may reasonably try
+ * several reviews in one session.
+ */
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many AI requests from this IP. Please wait a few minutes and try again.",
+  },
+  handler: (req, res, next, options) => {
+    res.status(options.statusCode).json(options.message);
+  },
+});
+
+module.exports = { authLimiter, aiLimiter };

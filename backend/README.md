@@ -21,16 +21,27 @@ backend/
 │   └── db.js                  # MongoDB connection
 ├── controllers/
 │   ├── reviewController.js    # CRUD + search + stats logic for reviews
-│   └── authController.js      # register / login logic
+│   ├── authController.js      # register / login logic
+│   └── aiController.js        # AI sentiment endpoint (Week 7)
+├── services/
+│   └── geminiService.js        # Google Gemini API wrapper (Week 7)
+├── scripts/
+│   └── testPrompts.js          # compares the 3 prompt variants — see PROMPTS.md
 ├── middleware/
 │   ├── errorMiddleware.js      # centralized 404 + error handler
-│   └── asyncHandler.js         # wraps async controllers, forwards errors
+│   ├── asyncHandler.js         # wraps async controllers, forwards errors
+│   ├── validate.js             # shared zod-validation middleware factory
+│   └── rateLimiter.js          # authLimiter + aiLimiter
+├── validators/
+│   ├── authValidators.js       # register/login schemas
+│   └── aiValidators.js         # AI sentiment request schema
 ├── models/
 │   ├── Review.js               # Review schema
 │   └── User.js                 # User schema (hashed passwords)
 ├── routes/
 │   ├── reviewRoutes.js
-│   └── authRoutes.js
+│   ├── authRoutes.js
+│   └── aiRoutes.js              # POST /api/ai/sentiment (Week 7)
 ├── seed.js                      # populates MongoDB with sample reviews
 ├── server.js                    # app entry point
 ├── .env.example
@@ -202,3 +213,69 @@ Week 6 Postman collection is for.
 `CLIENT_URL` in `.env` is the *only* origin allowed to call this API. Set
 it to your deployed frontend URL in production — the default fallback is
 `http://localhost:3000` for local development, not `*`.
+
+## Week 7 — AI API Integration
+
+The `/ai-insights` page's "Analyze Sentiment" button calls a real AI
+service on the backend instead of a client-side mock classifier.
+
+### AI endpoint
+
+| Method | Route | Access | Notes |
+|---|---|---|---|
+| POST | `/api/ai/sentiment` | Public | Rate-limited (20/15min), zod-validated |
+
+**Request body:**
+```json
+{ "text": "The staff were wonderful and the room was spotless.", "guest": "Amara Okafor", "room": "Deluxe King" }
+```
+`guest` and `room` are optional — they're only used to give the model a
+little more context for its summary.
+
+**Response:**
+```json
+{ "success": true, "data": { "sentiment": "Positive", "confidence": 92, "summary": "Guest praised staff attentiveness and room cleanliness." } }
+```
+
+### How it works
+
+1. `backend/controllers/aiController.js` builds a system + user prompt and
+   calls `backend/services/geminiService.js`.
+2. `geminiService.js` calls Google Gemini's `generateContent` REST
+   endpoint (model configurable via `GEMINI_MODEL`, default
+   `gemini-1.5-flash`) with `responseMimeType: "application/json"` so the
+   model is constrained to return valid JSON.
+3. The parsed JSON is validated against a zod schema
+   (`sentiment`/`confidence`/`summary`) before it's ever sent to the
+   frontend — a malformed AI response fails loudly (502) instead of
+   corrupting a saved review.
+
+### Error handling
+
+| Situation | Response |
+|---|---|
+| `GEMINI_API_KEY` missing from `.env` | `500` — "AI service is not configured" |
+| Gemini takes >15s to respond | `504` — request timeout |
+| Gemini returns `429` | `429` — passed through to the client |
+| Gemini returns another non-2xx | `502` — "AI provider returned an error" |
+| Gemini's reply isn't valid JSON / doesn't match the expected schema | `502` — "unexpected response shape" |
+| Request body fails validation (missing/too-long `text`) | `400` — zod error message |
+
+The frontend (`app/ai-insights/page.jsx`) shows a `Loader` while the
+request is in flight, and shows the message above in both an inline error
+box and a Toast if it fails.
+
+### Setting up the Gemini API key
+
+1. Go to [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+   and create a free API key.
+2. Add it to `backend/.env` as `GEMINI_API_KEY`.
+3. Restart the backend.
+
+### Prompt engineering
+
+Three prompt variations were tested for this feature — see
+[`PROMPTS.md`](../PROMPTS.md) at the repo root for the full comparison,
+example outputs, and why the current prompt (role + strict JSON schema)
+was chosen. Run `npm run test:prompts` (from `backend/`) to reproduce that
+comparison against your own API key.

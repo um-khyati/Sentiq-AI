@@ -14,7 +14,11 @@ const notFound = (req, res, next) => {
  * Must be registered LAST, after all routes.
  */
 const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  // Some errors (e.g. AIServiceError from the Gemini integration) carry
+  // their own statusCode instead of the controller calling res.status()
+  // before throwing — honor that first, then fall back to the older
+  // convention used by the rest of the app.
+  let statusCode = err.statusCode || (res.statusCode && res.statusCode !== 200 ? res.statusCode : 500);
   let message = err.message || "Internal Server Error";
 
   // Mongoose: invalid ObjectId (e.g. /api/reviews/123)

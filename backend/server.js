@@ -8,6 +8,7 @@ const passport = require("./config/passport");
 const connectDB = require("./config/db");
 const reviewRoutes = require("./routes/reviewRoutes");
 const authRoutes = require("./routes/authRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 // Connect to MongoDB
@@ -40,6 +41,7 @@ app.get("/", (req, res) => {
 // --- API routes ---
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
 
 // --- Error handling (must be registered last) ---
 app.use(notFound);

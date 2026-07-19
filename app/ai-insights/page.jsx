@@ -5,17 +5,18 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimatedSection from "@/components/AnimatedSection";
 import { Button, Input, Loader, useToast } from "@/components/ui";
-import { reviewsApi } from "@/lib/api";
-import { BrainCircuit, Smile, Frown, Meh, Save, CheckCircle2 } from "lucide-react";
+import { reviewsApi, aiApi } from "@/lib/api";
+import { BrainCircuit, Smile, Frown, Meh, Save, CheckCircle2, AlertCircle } from "lucide-react";
 
 /**
- * /ai-insights — AI Feature Screen.
+ * /ai-insights — AI Feature Screen (Week 7).
  *
- * Lets the user paste a guest review and "analyze" it using a
- * deterministic keyword classifier (kept client-side — no real AI model
- * is required for this assignment). Once analyzed, the result can be
- * saved to the backend as a new Review via POST /api/reviews, which is
- * the "create" operation this page contributes to Deliverable 3.
+ * Lets the user paste a guest review and analyze it with a real AI call:
+ * POST /api/ai/sentiment on the backend, which prompts Google Gemini,
+ * parses its JSON reply, and returns {sentiment, confidence, summary}.
+ * Once analyzed, the result can be saved to the backend as a new Review
+ * via POST /api/reviews, which is the "create" operation this page
+ * contributes to Deliverable 3.
  */
 export default function AiInsightsPage() {
   const { toast } = useToast();
@@ -24,10 +25,11 @@ export default function AiInsightsPage() {
   const [reviewText, setReviewText] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleAnalyze = (e) => {
+  const handleAnalyze = async (e) => {
     e.preventDefault();
     if (!reviewText.trim()) {
       toast("Please paste a review to analyze.", { variant: "warning" });
@@ -37,14 +39,22 @@ export default function AiInsightsPage() {
     setAnalyzing(true);
     setResult(null);
     setSaved(false);
+    setError(null);
 
-    // Mock async "AI" call — deterministic keyword classifier for demo purposes.
-    setTimeout(() => {
-      const classification = mockClassify(reviewText);
-      setResult(classification);
-      setAnalyzing(false);
+    try {
+      const res = await aiApi.analyzeSentiment({
+        text: reviewText,
+        guest: guest.trim(),
+        room: room.trim(),
+      });
+      setResult(res.data);
       toast("Analysis complete.", { variant: "success" });
-    }, 1500);
+    } catch (err) {
+      setError(err.message);
+      toast(err.message, { variant: "error" });
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   /** Persists the analyzed review to the backend (POST /api/reviews). */
@@ -127,6 +137,13 @@ export default function AiInsightsPage() {
               </div>
             )}
 
+            {error && !analyzing && (
+              <div className="mt-6 flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
             {result && !analyzing && (
               <ResultCard
                 result={result}
@@ -190,33 +207,3 @@ function ResultCard({ result, onSave, saving, saved }) {
   );
 }
 
-/** Lightweight keyword-based mock classifier for demo purposes. */
-function mockClassify(text) {
-  const lower = text.toLowerCase();
-  const positiveWords = ["great", "love", "amazing", "wonderful", "clean", "friendly", "best", "spotless", "attentive"];
-  const negativeWords = ["bad", "broken", "dirty", "rude", "noisy", "slow", "worst", "disappointing", "terrible"];
-
-  const score =
-    positiveWords.filter((w) => lower.includes(w)).length -
-    negativeWords.filter((w) => lower.includes(w)).length;
-
-  if (score > 0) {
-    return {
-      sentiment: "Positive",
-      confidence: Math.min(95, 70 + score * 6),
-      summary: "This review highlights positive aspects of the guest experience.",
-    };
-  }
-  if (score < 0) {
-    return {
-      sentiment: "Negative",
-      confidence: Math.min(95, 70 + Math.abs(score) * 6),
-      summary: "This review points to issues that may need attention from staff.",
-    };
-  }
-  return {
-    sentiment: "Neutral",
-    confidence: 60,
-    summary: "This review is mixed or doesn't strongly lean positive or negative.",
-  };
-}
