@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimatedSection from "@/components/AnimatedSection";
@@ -67,7 +67,7 @@ function ReviewsContent() {
   const [createForm, setCreateForm] = useState(emptyForm);
   const [creating, setCreating] = useState(false);
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -78,11 +78,11 @@ function ReviewsContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadReviews();
-  }, []);
+  }, [loadReviews]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -115,44 +115,50 @@ function ReviewsContent() {
   };
 
   /** Create a new review (POST /api/reviews) */
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setCreating(true);
-    try {
-      const payload = { ...createForm, score: Number(createForm.score) };
-      const res = await reviewsApi.create(payload);
-      setReviews((prev) => [res.data, ...prev]);
-      toast("Review created.", { variant: "success" });
-      setCreateOpen(false);
-      setCreateForm(emptyForm);
-    } catch (err) {
-      toast(err.message, { variant: "error" });
-    } finally {
-      setCreating(false);
-    }
-  };
+  const handleCreate = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setCreating(true);
+      try {
+        const payload = { ...createForm, score: Number(createForm.score) };
+        const res = await reviewsApi.create(payload);
+        setReviews((prev) => [res.data, ...prev]);
+        toast("Review created.", { variant: "success" });
+        setCreateOpen(false);
+        setCreateForm(emptyForm);
+      } catch (err) {
+        toast(err.message, { variant: "error" });
+      } finally {
+        setCreating(false);
+      }
+    },
+    [createForm, toast]
+  );
 
   /** Save edits to an existing review (PUT /api/reviews/:id) */
-  const handleSaveEdit = async (e) => {
-    e.preventDefault();
-    if (!selected) return;
-    setSavingEdit(true);
-    try {
-      const payload = { ...editForm, score: Number(editForm.score) };
-      const res = await reviewsApi.update(selected._id, payload);
-      setReviews((prev) => prev.map((r) => (r._id === selected._id ? res.data : r)));
-      setSelected(res.data);
-      setEditing(false);
-      toast("Review updated.", { variant: "success" });
-    } catch (err) {
-      toast(err.message, { variant: "error" });
-    } finally {
-      setSavingEdit(false);
-    }
-  };
+  const handleSaveEdit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!selected) return;
+      setSavingEdit(true);
+      try {
+        const payload = { ...editForm, score: Number(editForm.score) };
+        const res = await reviewsApi.update(selected._id, payload);
+        setReviews((prev) => prev.map((r) => (r._id === selected._id ? res.data : r)));
+        setSelected(res.data);
+        setEditing(false);
+        toast("Review updated.", { variant: "success" });
+      } catch (err) {
+        toast(err.message, { variant: "error" });
+      } finally {
+        setSavingEdit(false);
+      }
+    },
+    [selected, editForm, toast]
+  );
 
   /** Delete a review (DELETE /api/reviews/:id) */
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!selected) return;
     if (typeof window !== "undefined" && !window.confirm(`Delete the review from ${selected.guest}?`)) {
       return;
@@ -168,7 +174,8 @@ function ReviewsContent() {
     } finally {
       setDeleting(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, toast]);
 
   return (
     <>
