@@ -1,6 +1,7 @@
 import "./globals.css";
 import { ThemeProvider } from "../components/ThemeProvider";
 import { ToastProvider } from "../components/ui";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 // Metadata for the SentiqAI app (Next.js App Router convention)
 export const metadata = {
@@ -32,7 +33,9 @@ export default function RootLayout({ children }) {
       </head>
       <body className="flex min-h-screen flex-col bg-white text-slate-900 antialiased transition-colors duration-300 dark:bg-surface-dark dark:text-slate-100">
         <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
