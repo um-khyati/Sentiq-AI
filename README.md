@@ -1,62 +1,55 @@
 # SentiqAI 🧠 — AI-Powered Guest Review Intelligence
 
-A full-stack web app that helps hospitality businesses (hotels, homestays,
-restaurants) understand guest feedback through sentiment analysis and a
-centralized review dashboard.
+A full-stack web app that helps hospitality businesses (hotels, homestays, restaurants) understand guest feedback through AI-powered sentiment analysis and a centralized review dashboard.
 
-> Built during the **TBI-GEU Summer Internship Program 2026** for Trishul
-> Eco-Homestays, Chopta, Uttarakhand.
+> Built during the **TBI-GEU Summer Internship Program 2026**, in collaboration with **Trishul Eco-Homestays, Chopta, Uttarakhand**.
+> Intern: **Khyati Uttam** | Intern ID: **TBI-26100004** | Graphic Era Deemed to Be University, Dehradun
 
-**Project status (Week 7):** Frontend (Next.js) connected to a working
-REST API backend (Node.js + Express + MongoDB/Mongoose), with JWT +
-Google OAuth authentication (Week 6) and a real AI integration (Week 7):
-the AI Insights page now calls Google Gemini through a backend endpoint
-to classify guest review sentiment, instead of a client-side mock.
+---
 
-### ✅ Week 7 deliverables
+## 🔗 Live Links
 
-| Deliverable | Where |
+| Resource | Link |
 |---|---|
-| 1. AI feature live end-to-end (input → loading → output, secure key, error handling) | `app/ai-insights/page.jsx` + `backend/controllers/aiController.js` + `backend/services/geminiService.js` |
-| 2. Demo screenshots + Network tab (200 OK) | [`W7_AIFeatureDemo_TBI-26100004.pdf`](./W7_AIFeatureDemo_TBI-26100004.pdf) |
-| 3. Prompts log (3 variants tested + rationale) | [`PROMPTS.md`](./PROMPTS.md) |
-| 4. Peer code review (2 classmates, 150 words each) | submitted via the Week 7 Google Form, not part of this repo |
+| 🌐 Live App | [https://sentiq-5dskc6309-um-khyatis-projects.vercel.app](https://sentiq-5dskc6309-um-khyatis-projects.vercel.app) |
+| 🖥️ GitHub Repo | [https://github.com/um-khyati/Sentiq-AI](https://github.com/um-khyati/Sentiq-AI) |
+| 💼 LinkedIn | [https://www.linkedin.com/in/khyatiuttam/](https://www.linkedin.com/in/khyatiuttam/) |
 
 ---
 
 ## 📌 Problem Statement
 
-Homestays and small hospitality businesses receive guest reviews across
-multiple platforms (Google Reviews, TripAdvisor, Booking.com, social
-media). Manually reading, organizing, and responding to this feedback is
-time-consuming and often leads to valuable insights being overlooked.
+Homestays and small hospitality businesses receive guest reviews across multiple platforms (Google Reviews, TripAdvisor, Booking.com, social media). Manually reading, organizing, and responding to this feedback is time-consuming, and valuable insights often get overlooked.
 
 ## 💡 Solution
 
-SentiqAI gives hospitality staff a simple platform to log guest reviews
-and instantly see sentiment breakdowns:
+SentiqAI gives hospitality staff a simple platform to log guest reviews and instantly see sentiment breakdowns:
 
 - 🔴🟡🟢 Sentiment classification (Positive / Neutral / Negative)
 - 📊 A dashboard with live review analytics
 - 💾 A searchable review history with full CRUD management
-- 🧠 An AI Insights tool that calls Google Gemini to classify a pasted
-  review's sentiment in real time, and can save the result straight into
-  the review history
-- 🛡️ Rate-limited, validated AI endpoint with clear error messages for
-  missing config, timeouts, and upstream rate limits — never a raw crash
+- 🧠 An AI Insights tool that calls Google Gemini to classify a pasted review's sentiment in real time, and can save the result straight into the review history
+- 🛡️ Rate-limited, validated AI endpoint with clear error messages for missing config, timeouts, and upstream rate limits — never a raw crash
+- 🔐 JWT authentication + Google OAuth sign-in
+
+---
 
 ## 🛠️ Tech Stack
 
-**Frontend**
-- Next.js 14 (App Router) + JavaScript
-- Tailwind CSS (class-based dark mode)
-- Framer Motion (animations) · Lucide React (icons)
+| Layer | Technology | Why |
+|---|---|---|
+| Frontend | Next.js 14 (App Router) | React Server Components + file-based routing, fast dev experience |
+| Styling | Tailwind CSS (class-based dark mode) | Rapid, consistent UI styling without leaving JSX |
+| Animation | Framer Motion · Lucide React | Smooth UI transitions, consistent icon set |
+| Backend | Node.js + Express.js | Lightweight, fast to stand up a REST API |
+| Database | MongoDB + Mongoose | Flexible schema, good fit for review documents that can evolve over time |
+| Auth | JWT + bcryptjs + Passport (Google OAuth 2.0) | Stateless auth for the REST API, plus one-click Google sign-in |
+| Validation | Zod | Schema validation on both auth and AI endpoints, shared middleware factory |
+| AI / LLM | Google Gemini (`gemini-1.5-flash`) | Strong NLP for sentiment classification, forced JSON output mode, generous free tier |
+| Frontend Hosting | Vercel | Native Next.js support, easy CI/CD from GitHub |
+| Backend Hosting | Render | Simple Node.js deployment with a free tier |
 
-**Backend**
-- Node.js + Express.js
-- MongoDB + Mongoose
-- dotenv · cors · bcryptjs · jsonwebtoken
-- nodemon (dev)
+---
 
 ## 🏗️ Architecture
 
@@ -69,90 +62,53 @@ Express REST API (backend/)
         ├── controllers/  (business logic)
         ├── models/        (Mongoose schemas)
         ├── routes/        (Express routers)
-        └── middleware/    (centralized error handling)
+        ├── services/       (geminiService.js — Gemini API wrapper)
+        ├── validators/     (Zod schemas)
+        └── middleware/     (auth, rate limiting, centralized error handling)
         │
         ▼
    MongoDB (reviews, users collections)
 ```
 
 ---
-
-## Project Structure
-
-```
-sentiqai/
-├── app/                        # Next.js App Router pages
-│   ├── page.jsx                # Home
-│   ├── dashboard/page.jsx      # Live stats + recent reviews (backend-connected)
-│   ├── reviews/page.jsx        # Full CRUD review list (backend-connected)
-│   ├── ai-insights/page.jsx    # AI sentiment classifier (Gemini) + "Save to Reviews"
-│   ├── login/page.jsx          # Backend-connected login
-│   ├── signup/page.jsx         # Backend-connected signup
-│   ├── about/page.jsx
-│   └── components-demo/page.jsx
-├── components/                 # Shared UI components (Navbar, Button, Modal, etc.)
-├── lib/
-│   └── api.js                  # Centralized fetch client for the backend API
-├── backend/                    # Express REST API (see backend/README.md)
-│   ├── config/db.js
-│   ├── controllers/            # includes aiController.js (Week 7)
-│   ├── services/                # geminiService.js — Google Gemini API wrapper (Week 7)
-│   ├── scripts/                 # testPrompts.js — reproduces PROMPTS.md comparison (Week 7)
-│   ├── middleware/
-│   ├── validators/
-│   ├── models/
-│   ├── routes/                  # includes aiRoutes.js (Week 7)
-│   ├── seed.js
-│   ├── server.js
-│   ├── .env.example
-│   └── package.json
-├── W4_APICollection_KhyatiUttam.json   # Postman collection (Week 4, Deliverable 2)
-├── W7_AIFeatureDemo_TBI-26100004.pdf     # Demo screenshots + Network 200 (Deliverable 2, Week 7)
-├── PROMPTS.md                   # AI prompt variations tested (Deliverable 3, Week 7)
-├── .env.local.example          # Frontend env template
-├── package.json
-└── README.md
-```
-
 ---
 
-## Getting Started
+## ⚙️ Getting Started (Local Setup)
 
-You'll run two servers during development: the Next.js frontend (port
-`3000`) and the Express backend (port `5000`).
+You'll run two servers during development: the Next.js frontend (port `3000`) and the Express backend (port `5000`).
 
 ### 1. Backend setup
 
 ```bash
 cd backend
 npm install
-cp .env.example .env     # then edit .env — see backend/README.md for details
+cp .env.example .env     # then fill in real values — see table below
 npm run seed              # optional: populate MongoDB with sample reviews
 npm run dev                # starts the API on http://localhost:5000
 ```
 
-`.env` needs a `GEMINI_API_KEY` for the `/ai-insights` page to work — get a
-free one at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
-and paste it in. Without it, `/api/ai/sentiment` returns a clear
-"AI service is not configured" error instead of a raw crash.
-
-See **[backend/README.md](./backend/README.md)** for full details: MongoDB
-setup (local or Atlas), environment variables, and the complete API
-reference.
+| Variable | Description |
+|---|---|
+| `PORT` | Port the API listens on (default `5000`) |
+| `MONGO_URI` | MongoDB connection string (local or Atlas) |
+| `JWT_SECRET` | Secret used to sign auth tokens |
+| `JWT_EXPIRES_IN` | Token lifetime, e.g. `7d` |
+| `NODE_ENV` | `development` or `production` |
+| `CLIENT_URL` | Frontend origin, used for CORS |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth credentials |
+| `GOOGLE_CALLBACK_URL` | Must exactly match the Authorized redirect URI in Google Cloud Console |
+| `GEMINI_API_KEY` | Free key from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) |
+| `GEMINI_MODEL` | Optional, defaults to `gemini-1.5-flash` |
 
 ### 2. Frontend setup
 
-From the project root (a separate terminal):
+From the project root, in a separate terminal:
 
 ```bash
 npm install
 cp .env.local.example .env.local   # points the frontend at http://localhost:5000/api
 npm run dev                          # starts the frontend on http://localhost:3000
 ```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser. The
-backend must be running for the Dashboard, Reviews, AI Insights, Login,
-and Signup pages to load real data.
 
 ### 3. Build for production
 
@@ -163,90 +119,126 @@ npm start
 
 ---
 
-## Dark / Light Mode
+## 🧩 API Reference
 
-- Toggle the sun/moon icon in the navbar to switch themes.
-- Defaults to the visitor's system preference on first visit.
-- The chosen theme is saved to `localStorage` and restored on return visits.
-- A small inline script in `app/layout.jsx` applies the theme before paint
-  to avoid a flash of the wrong theme.
+Base URL: `http://localhost:5000/api` (local) or `https://sentiq-ai-q3rg.onrender.com/api` (production)
 
-## Pages
+### Reviews
 
-| Route          | Description                                                        |
-|-----------------|---------------------------------------------------------------------|
-| `/`             | Home – Hero + feature cards                                        |
-| `/dashboard`    | Live stats + recent reviews, fetched from `GET /api/reviews/stats` and `GET /api/reviews` |
-| `/reviews`      | Full review list with search, create, edit, and delete             |
-| `/ai-insights`  | Paste a review, get a Gemini-powered sentiment classification (`POST /api/ai/sentiment`), optionally save it as a new review |
-| `/login`        | Authenticates against `POST /api/auth/login`                       |
-| `/signup`       | Registers a new account via `POST /api/auth/register`              |
-| `/about`        | About SentiqAI                                                      |
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/reviews` | Public | List all reviews (optional `?sentiment=` & `?room=` filters) |
+| GET | `/reviews/:id` | Public | Get a single review |
+| POST | `/reviews` | 🔒 JWT | Create a review |
+| PUT | `/reviews/:id` | 🔒 JWT | Update a review |
+| DELETE | `/reviews/:id` | 🔒 JWT | Delete a review |
+| GET | `/reviews/search?q=` | Public | Search by guest, room, sentiment, or text |
+| GET | `/reviews/stats` | Public | Aggregated sentiment counts (powers the Dashboard) |
 
-## Backend API Summary
+### Auth
 
-Base URL: `http://localhost:5000/api`
+| Method | Endpoint | Access | Notes |
+|---|---|---|---|
+| POST | `/auth/register` | Public | Rate-limited (5/15min), Zod-validated |
+| POST | `/auth/login` | Public | Rate-limited (5/15min), Zod-validated, returns JWT |
+| GET | `/auth/me` | 🔒 JWT | Requires `Authorization: Bearer <token>` |
+| GET | `/auth/google` | Public | Starts Google OAuth flow |
+| GET | `/auth/google/callback` | Public | Google redirects here; issues JWT, redirects to frontend |
 
-| Method | Endpoint              | Purpose                                  |
-|--------|-------------------------|--------------------------------------------|
-| GET    | `/reviews`              | List all reviews                           |
-| GET    | `/reviews/:id`           | Get one review                             |
-| POST   | `/reviews`               | Create a review                            |
-| PUT    | `/reviews/:id`           | Update a review                            |
-| DELETE | `/reviews/:id`           | Delete a review                            |
-| GET    | `/reviews/search?q=`     | Search/filter reviews                      |
-| GET    | `/reviews/stats`         | Aggregated sentiment counts (Dashboard)    |
-| POST   | `/auth/register`         | Create a user account                      |
-| POST   | `/auth/login`            | Authenticate, receive a JWT                |
-| POST   | `/ai/sentiment`          | Classify a guest review's sentiment via Google Gemini (Week 7) |
+### AI ⭐ (Best / most notable endpoint)
 
-Full details, request/response examples, and error formats are in
-[backend/README.md](./backend/README.md). A ready-to-import Postman
-collection with example requests and responses for every endpoint is at
-[`W4_APICollection_KhyatiUttam.json`](./W4_APICollection_KhyatiUttam.json).
+| Method | Endpoint | Access | Notes |
+|---|---|---|---|
+| POST | `/ai/sentiment` | Public | Rate-limited (20/15min), Zod-validated |
 
-## Testing
+**Request:**
+```json
+{ "text": "The staff were wonderful and the room was spotless.", "guest": "Amara Okafor", "room": "Deluxe King" }
+```
 
-1. Start MongoDB, then the backend (`npm run dev` inside `backend/`).
-2. Import `W4_APICollection_KhyatiUttam.json` into Postman and run the
-   requests in the **Reviews** and **Auth** folders to exercise the API
-   directly.
-3. Start the frontend (`npm run dev` at the project root) and verify in
-   the browser:
-   - `/reviews` loads data from MongoDB, and Add/Edit/Delete work.
-   - `/dashboard` shows live counts that match what's in the database.
-   - `/ai-insights` sends a pasted review to `POST /api/ai/sentiment`
-     (real Gemini call), shows a loading state, then displays the result;
-     "Save to Reviews" adds it to `/reviews`. Try it with the backend
-     `GEMINI_API_KEY` unset too — you should see a clean error Toast, not
-     a crash.
-   - `/signup` then `/login` work against the `users` collection.
+**Response:**
+```json
+{ "success": true, "data": { "sentiment": "Positive", "confidence": 92, "summary": "Guest praised staff attentiveness and room cleanliness." } }
+```
 
-See **[PROMPTS.md](./PROMPTS.md)** for the prompt variations tested for
-the AI feature and why the current one was chosen, and
-**[`W7_AIFeatureDemo_TBI-26100004.pdf`](./W7_AIFeatureDemo_TBI-26100004.pdf)**
-for a walkthrough of the feature (input → loading → output) plus the
-Network tab confirming a 200 response.
+**How it works:** `aiController.js` builds a system + user prompt and calls `geminiService.js`, which hits Gemini's `generateContent` endpoint with `responseMimeType: "application/json"` — forcing strictly valid JSON. The parsed response is then re-validated against a Zod schema before it ever reaches the frontend, so a malformed AI response fails loudly (502) instead of corrupting a saved review.
 
-## 🎓 Internship Project
+| Failure case | Response |
+|---|---|
+| `GEMINI_API_KEY` missing | `500` — "AI service is not configured" |
+| Gemini takes >15s | `504` — request timeout |
+| Gemini returns 429 | `429` — passed through |
+| Gemini returns other non-2xx | `502` — "AI provider returned an error" |
+| Gemini reply fails schema validation | `502` — "unexpected response shape" |
+| Request body invalid | `400` — Zod error message |
 
-This project is being developed as part of the **TBI-GEU Summer
-Internship Program 2026** in collaboration with **Trishul Eco-Homestays,
-Chopta, Uttarakhand**.
+A ready-to-import Postman collection with example requests for every endpoint is included: [`W4_APICollection_KhyatiUttam.json`](./W4_APICollection_KhyatiUttam.json) and [`W6_AuthAPICollection_KhyatiUttam.json`](./W6_AuthAPICollection_KhyatiUttam.json).
+
+---
+
+## 🗄️ Database Schema (MongoDB / Mongoose)
+
+**`Review`**
+
+| Field | Type | Notes |
+|---|---|---|
+| `guest` | String | required, max 120 chars |
+| `room` | String | required, max 120 chars |
+| `sentiment` | String | enum: `Positive`, `Negative`, `Neutral` |
+| `score` | Number | 0–100 |
+| `text` | String | required, max 2000 chars |
+| `date` | Date | defaults to now |
+| `createdAt` / `updatedAt` | Date | auto (timestamps) |
+
+Indexed as a text index on `guest`, `room`, `text` to power the search endpoint.
+
+**`User`**
+
+| Field | Type | Notes |
+|---|---|---|
+| `name` | String | required, max 120 chars |
+| `email` | String | required, unique, lowercase |
+| `password` | String | bcrypt-hashed, min 8 chars, never returned by default |
+| `authProvider` | String | `local` or `google` |
+| `googleId` | String | set when signed up via Google OAuth |
+| `createdAt` / `updatedAt` | Date | auto (timestamps) |
+
+---
+
+## 🤖 AI Feature
+
+**Model used:** Google Gemini `gemini-1.5-flash` (configurable via `GEMINI_MODEL`)
+**Use case:** A pasted guest review is sent to Gemini, which returns a strict JSON object — sentiment classification (Positive/Negative/Neutral), a 0–100 confidence score, and a one-to-two sentence, staff-actionable summary naming the specific thing that drove the sentiment (e.g. staff attentiveness, wifi, cleanliness).
+
+Three prompt variants were tested (zero-shot, role + strict JSON schema, and reasoning-guided JSON-only) — the role + strict-JSON-schema variant was chosen for production because it's the only one that reliably returns parseable JSON every time. Full comparison in [`PROMPTS.md`](./PROMPTS.md).
+
+---
+
+## 🚀 Deployment
+
+- **Frontend:** Deployed on Vercel — [sentiq-5dskc6309-um-khyatis-projects.vercel.app](https://sentiq-5dskc6309-um-khyatis-projects.vercel.app)
+- **Backend:** Deployed on Render — [sentiq-ai-q3rg.onrender.com](https://sentiq-ai-q3rg.onrender.com)
+- ⚠️ **Open item:** finish the Google OAuth production redirect URI setup in Google Cloud Console — add `https://sentiq-ai-q3rg.onrender.com/api/auth/google/callback` as an Authorized redirect URI, matching `GOOGLE_CALLBACK_URL` in production `.env`
+
+---
+
+## 📚 What I Learned
+
+This internship pushed me past tutorial-level AI integration into building something production-minded. Getting Google Gemini to return reliably parseable output meant testing three different prompt strategies before landing on a role-based system prompt with a strict JSON schema — a good lesson in why "it usually works" isn't good enough when a backend depends on the response. Implementing JWT auth alongside Google OAuth taught me how much of real authentication is really about edge cases: token expiry, provider-specific user records, and CORS configured for a specific frontend origin rather than a wildcard. Deploying across two separate platforms (Vercel for the frontend, Render for the backend) also made production configuration real for me for the first time — environment variables, redirect URIs, and CORS origins all needed to match exactly between local and deployed environments, in a way that's easy to gloss over when everything just runs on localhost. Building this for an actual hospitality client, Trishul Eco-Homestays, made the problem feel real rather than academic, and that context shaped decisions like keeping AI-generated summaries staff-actionable instead of just technically correct.
+
+---
 
 ## 👤 Author
 
 **Khyati Uttam**
-B.Tech Computer Science Engineering, Graphic Era University
+B.Tech Computer Science Engineering, Graphic Era Deemed to Be University
 
-- GitHub: https://github.com/um-khyati
-- LinkedIn: https://www.linkedin.com/in/khyatiuttam/
+- GitHub: [https://github.com/um-khyati](https://github.com/um-khyati)
+- LinkedIn: [https://www.linkedin.com/in/khyatiuttam/](https://www.linkedin.com/in/khyatiuttam/)
 
 ## 📄 License
 
-This project is under active development as part of an academic
-internship program. License information will be added upon project
-completion.
+This project is under active development as part of an academic internship program.
 
 ---
 
